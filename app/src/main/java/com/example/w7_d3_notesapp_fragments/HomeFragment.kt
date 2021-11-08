@@ -1,5 +1,7 @@
 package com.example.w7_d3_notesapp_fragments
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -19,14 +21,15 @@ import com.example.w7_d3_notesapp_fragments.adapter.NoteAdapter
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-private lateinit var rvNotes: RecyclerView
-private lateinit var rvAdapter: NoteAdapter
-private lateinit var editText: EditText
-private lateinit var submitBtn: Button
-
-lateinit var mainViewModel: MyViewModel
-
 class HomeFragment : Fragment() {
+    private lateinit var rvNotes: RecyclerView
+    private lateinit var rvAdapter: NoteAdapter
+    private lateinit var editText: EditText
+    private lateinit var submitBtn: Button
+
+    lateinit var mainViewModel: MyViewModel
+    lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -34,29 +37,32 @@ class HomeFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_home, container, false)
 
-        view.findViewById<Button>(R.id.saveButton).setOnClickListener{
-            Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_updateFragment)
-        }
+        sharedPreferences = requireActivity().getSharedPreferences(
+            getString(R.string.preference_file_key), Context.MODE_PRIVATE)
 
         mainViewModel = ViewModelProvider(this).get(MyViewModel::class.java)
         mainViewModel.getNotes().observe(viewLifecycleOwner, {
                 notes -> rvAdapter.updateRecycleView(notes)
         })
 
-        view.findViewById<EditText>(R.id.messageEditText)
-        view.findViewById<Button>(R.id.saveButton)
+        view.findViewById<Button>(R.id.saveButton).setOnClickListener{
+            Navigation.findNavController(view).navigate(R.id.action_homeFragment_to_updateFragment)
+        }
+
+        editText = view.findViewById<EditText>(R.id.messageEditText)
+        submitBtn = view.findViewById<Button>(R.id.saveButton)
         submitBtn.setOnClickListener {
             mainViewModel.addNote(editText.text.toString())
             editText.text.clear()
             editText.clearFocus()
         }
 
-        view.findViewById<RecyclerView>(R.id.recyclerView)
+        rvNotes = view.findViewById(R.id.recyclerView)
         rvAdapter = NoteAdapter(this)
         rvNotes.adapter = rvAdapter
-        //rvNotes.layoutManager = LinearLayoutManager(this)
+        rvNotes.layoutManager = LinearLayoutManager(requireContext())
+
+        mainViewModel.getNotes()
         return view
-
-
     }
 }

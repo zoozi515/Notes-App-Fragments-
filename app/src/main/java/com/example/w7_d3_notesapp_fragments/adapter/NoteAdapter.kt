@@ -3,6 +3,9 @@ package com.example.w7_d3_notesapp_fragments.adapter
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import com.example.w7_d3_notesapp_fragments.R
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.w7_d3_notesapp_fragments.MainActivity
 import com.example.w7_d3_notesapp_fragments.database.Note
@@ -10,7 +13,7 @@ import com.example.w7_d3_notesapp_fragments.databinding.NoteRowBinding
 import com.example.w7_d3_notesapp_fragments.HomeFragment
 import com.example.w7_d3_notesapp_fragments.databinding.FragmentHomeBinding
 
-class NoteAdapter(private val activity: HomeFragment): RecyclerView.Adapter<NoteAdapter.ItemViewHolder>() {
+class NoteAdapter(private val homeFragment: HomeFragment): RecyclerView.Adapter<NoteAdapter.ItemViewHolder>() {
     private var notes = emptyList<Note>()
 
     class ItemViewHolder(val binding: NoteRowBinding): RecyclerView.ViewHolder(binding.root)
@@ -30,10 +33,14 @@ class NoteAdapter(private val activity: HomeFragment): RecyclerView.Adapter<Note
                 holderLinearLayout.setBackgroundColor(Color.GRAY)
             }
             ibEditNote.setOnClickListener {
-                //activity.raiseDialog(item.id,true)
+                with(homeFragment.sharedPreferences.edit()) {
+                    putString("NoteId", item.id.toString())
+                    apply()
+                }
+                homeFragment.findNavController().navigate(R.id.action_homeFragment_to_updateFragment)
             }
             ibDeleteNote.setOnClickListener {
-                //activity.raiseDialog(item.id,false)
+                homeFragment.mainViewModel.deleteNote(item.id)
             }
         }
     }
